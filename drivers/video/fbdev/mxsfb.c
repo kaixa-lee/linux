@@ -1526,8 +1526,7 @@ static void mxsfb_free_videomem(struct mxsfb_info *host)
 static int mxsfb_map_videomem(struct fb_info *fbi)
 {
 	if (fbi->fix.smem_len < fbi->var.yres_virtual * fbi->fix.line_length)
-		fbi->fix.smem_len = fbi->var.yres_virtual *
-				    fbi->fix.line_length;
+		fbi->fix.smem_len = fbi->var.yres_virtual * fbi->fix.line_length;
 
 	fbi->screen_base = dma_alloc_wc(fbi->device,
 				fbi->fix.smem_len,

@@ -783,6 +783,7 @@ static int i2c_check_mux_parents(struct i2c_adapter *adapter, int addr)
 	if (!result && parent)
 		result = i2c_check_mux_parents(parent, addr);
 
+
 	return result;
 }
 
