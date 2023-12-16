@@ -433,7 +433,7 @@
                 reg = <0x14>;
                 status = "okay";
                 interrupt-parent = <&gpio1>;
-                interrupts = <9 0>;
+                interrupts = <9 IRQ_TYPE_EDGE_FALLING>;
                 pinctrl-0 = <&ts_int_pin
 			     &ts_reset_pin>;
 		goodix,rst-gpio = <&gpio5 9  GPIO_ACTIVE_LOW>;
