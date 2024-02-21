@@ -1,13 +1,32 @@
-/*
- * Copyright 2019 NXP
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- */
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+//
+// Copyright (C) 2016 Freescale Semiconductor, Inc.
 
-#include "imx6ull-14x14-evk.dts"
+/dts-v1/;
+
+#include "imx6ull.dtsi"
+#include "imx6ul-14x14-evk.dtsi"
+
+/ {
+	model = "Freescale i.MX6 ULL 14x14 EVK Board";
+	compatible = "fsl,imx6ull-14x14-evk", "fsl,imx6ull";
+};
+
+&clks {
+	assigned-clocks = <&clks IMX6UL_CLK_PLL3_PFD2>,
+			          <&clks IMX6UL_CLK_PLL4_AUDIO_DIV>;
+	assigned-clock-rates = <320000000>, <786432000>;
+};
+
+&csi {
+	status = "okay";
+};
+
+&ov5640 {
+	status = "okay";
+};
+
+/delete-node/ &sim2;
 
 / {
     onewire {
@@ -135,7 +154,7 @@
 
 &iomuxc_snvs {
     pinctrl-names = "default_snvs";
-    pinctrl_fec1_reset: fec1_resetgrp {
+    pinctrl_fec1_reset: fec1_resetgp {
         fsl,pins = <MX6ULL_PAD_SNVS_TAMPER7__GPIO5_IO07    0x79>;
     };
 
