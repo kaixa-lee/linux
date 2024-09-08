@@ -9,7 +9,11 @@
 
 / {
 	model = "Freescale i.MX6 ULL 14x14 EVK Board";
-	compatible = "fsl,imx6ull-14x14-evk", "fsl,imx6ull";
+	compatible = "fsl,imx6ull-14x14-evk-emmc", "fsl,imx6ull";
+
+    chosen {
+        bootargs = "console=ttymxc0,115200 root=/dev/mmcblk1p2 rootwait rw";
+    };
 };
 
 &clks {
@@ -154,7 +158,7 @@
 
 &iomuxc_snvs {
     pinctrl-names = "default_snvs";
-    pinctrl_fec1_reset: fec1_resetgp {
+    pinctrl_fec1_reset: fec1_resetgrp {
         fsl,pins = <MX6ULL_PAD_SNVS_TAMPER7__GPIO5_IO07    0x79>;
     };
 
