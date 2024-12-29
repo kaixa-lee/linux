@@ -69,6 +69,7 @@
         "arch/arm64/boot/dts/freescale/[j-n]*": true,
         "arch/arm64/boot/dts/freescale/[p-z]*": true,
         "arch/arm64/boot/dts/freescale/imx8-*": true,
+        "arch/arm64/boot/dts/freescale/imx9*": true,
         "arch/arm64/boot/dts/freescale/imx8[a-l]*.dts*": true,
         "arch/arm64/boot/dts/freescale/imx8[n-z]*.dts*": true,
         "arch/arm64/boot/dts/freescale/imx8m[a-o]*.dts*": true,

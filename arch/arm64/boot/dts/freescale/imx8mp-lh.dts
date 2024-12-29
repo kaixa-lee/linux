@@ -176,8 +176,8 @@
 };
 
 &iomuxc {
-	// pinctrl-names = "default";
-	// pinctrl-0 = <&pinctrl_hog1>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog1>;
 
 	hog_func {
 		pinctrl_hog1: hog1 {
@@ -1063,6 +1063,8 @@
 };
 
 &irqsteer_hdmi {
+	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_800M>;
+	assigned-clock-rates = <200000000>;
 	status = "okay";
 };
 
@@ -1263,4 +1265,40 @@
 
 &snvs_rtc {
 	/delete-node/ snvs-rtc-lp;
+};
+
+&lcdif1 {
+	status = "okay";
+};
+
+&lcdif2 {
+	status = "okay";
+};
+
+&lcdif3 {
+	status = "okay";
+
+	thres-low  = <1 2>;             /* (FIFO * 1 / 2) */
+	thres-high = <3 4>;             /* (FIFO * 3 / 4) */
+};
+
+&ldb {
+	status = "okay";
+
+	lvds-channel@0 {
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		status = "okay";
+		port@1 {
+			reg = <1>;
+
+			lvds_out: endpoint {
+				remote-endpoint = <&panel_lvds_in>;
+			};
+		};
+	};
+};
+
+&ldb_phy {
+	status = "okay";
 };
