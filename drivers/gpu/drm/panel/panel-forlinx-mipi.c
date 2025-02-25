@@ -35,7 +35,7 @@ static const u32 rad_bus_formats[] = {
 };
 
 static const u32 rad_bus_flags = DRM_BUS_FLAG_DE_LOW |
-				 DRM_BUS_FLAG_PIXDATA_NEGEDGE;
+        DRM_BUS_FLAG_PIXDATA_NEGEDGE;
 
 struct rad_panel {
 	struct drm_panel panel;
@@ -47,7 +47,6 @@ struct rad_panel {
 	struct regulator_bulk_data *supplies;
 	unsigned int num_supplies;
 
-	bool prepared;
 	bool enabled;
 
 	const struct rad_platform_data *pdata;
@@ -71,45 +70,12 @@ static const struct drm_display_mode default_mode = {
 	.width_mm = 68,
 	.height_mm = 121,
 	.flags = DRM_MODE_FLAG_NHSYNC |
-		 DRM_MODE_FLAG_NVSYNC,
+	DRM_MODE_FLAG_NVSYNC,
 };
 
 static inline struct rad_panel *to_rad_panel(struct drm_panel *panel)
 {
 	return container_of(panel, struct rad_panel, panel);
-}
-
-
-static int rad_panel_prepare(struct drm_panel *panel)
-{
-	struct rad_panel *rad = to_rad_panel(panel);
-	int ret;
-
-	if (rad->prepared)
-		return 0;
-
-	if(rad->enable)
-		gpiod_set_value_cansleep(rad->enable, 1);
-
-	rad->prepared = true;
-
-	return 0;
-}
-
-static int rad_panel_unprepare(struct drm_panel *panel)
-{
-	struct rad_panel *rad = to_rad_panel(panel);
-	int ret;
-
-	if (!rad->prepared)
-		return 0;
-
-	if(rad->enable)
-		gpiod_set_value_cansleep(rad->enable, 0);
-
-	rad->prepared = false;
-
-	return 0;
 }
 
 static int rm67191_enable(struct rad_panel *panel)
@@ -118,21 +84,18 @@ static int rm67191_enable(struct rad_panel *panel)
 	struct device *dev = &dsi->dev;
 	int ret;
 
-	if (panel->enabled)
-		return 0;
-
-	if(panel->backlight){
+	if (panel->backlight) {
 		panel->backlight->props.state &= ~BL_CORE_FBBLANK;
 		panel->backlight->props.power = FB_BLANK_UNBLANK;
-		backlight_update_status(panel->backlight);
+		ret = backlight_update_status(panel->backlight);
+		if (ret)
+			goto fail;
 	}
-
-	panel->enabled = true;
 
 	return 0;
 
 fail:
-	if(panel->enable)
+	if (panel->enable)
 		gpiod_set_value_cansleep(panel->enable, 0);
 
 	return ret;
@@ -140,9 +103,20 @@ fail:
 
 static int rad_panel_enable(struct drm_panel *panel)
 {
+	int ret;
 	struct rad_panel *rad = to_rad_panel(panel);
+
+	if (panel->enabled)
+		return 0;
+
+	if (rad->enable)
+		gpiod_set_value_cansleep(rad->enable, 1);
+
 	//for different panel
-	return rad->pdata->enable(rad);
+	ret = rad->pdata->enable(rad);
+	if (!ret)
+		panel->enabled = true;
+	return ret;
 }
 
 static int rad_panel_disable(struct drm_panel *panel)
@@ -155,13 +129,13 @@ static int rad_panel_disable(struct drm_panel *panel)
 	if (!rad->enabled)
 		return 0;
 
-	if(rad->backlight){
+	if (rad->backlight) {
 		rad->backlight->props.power = FB_BLANK_POWERDOWN;
 		rad->backlight->props.state |= BL_CORE_FBBLANK;
 		backlight_update_status(rad->backlight);
 	}
 
-	if(rad->enable)
+	if (rad->enable)
 		gpiod_set_value_cansleep(rad->enable, 0);
 
 	rad->enabled = false;
@@ -179,14 +153,14 @@ static int rad_panel_get_modes(struct drm_panel *panel)
 	int ret;
 
 	timings_np = of_get_child_by_name(np, "display-timings");
-	if(timings_np){
+	if (timings_np) {
 		mode = drm_mode_create(drm);
-		if(!mode){
+		if (!mode) {
 			of_node_put(timings_np);
 			return 0;
 		}
 		ret = of_get_drm_display_mode(np, mode, NULL, 0);
-		if(ret){
+		if (ret) {
 			dev_dbg(panel->dev, "failed to find dts display timings\n");
 			drm_mode_destroy(drm, mode);
 			mode = NULL;
@@ -194,15 +168,15 @@ static int rad_panel_get_modes(struct drm_panel *panel)
 			mode->type |= DRM_MODE_TYPE_PREFERRED;
 		}
 		of_node_put(timings_np);
-	} 
+	}
 
-	if(!mode){
+	if (!mode) {
 		dev_info(panel->dev, "using default display timings\n");
 		mode = drm_mode_duplicate(panel->drm, &default_mode);
 		if (!mode) {
 			DRM_DEV_ERROR(panel->dev, "failed to add mode %ux%ux@%u\n",
-					default_mode.hdisplay, default_mode.vdisplay,
-					default_mode.vrefresh);
+			        default_mode.hdisplay, default_mode.vdisplay,
+			        default_mode.vrefresh);
 			return -ENOMEM;
 		}
 		mode->type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED;
@@ -217,68 +191,16 @@ static int rad_panel_get_modes(struct drm_panel *panel)
 	connector->display_info.bus_flags = rad_bus_flags;
 
 	drm_display_info_set_bus_formats(&connector->display_info,
-			rad_bus_formats,
-			ARRAY_SIZE(rad_bus_formats));
+	        rad_bus_formats,
+	        ARRAY_SIZE(rad_bus_formats));
 	return 1;
 }
 
-static int rad_bl_get_brightness(struct backlight_device *bl)
-{
-	struct mipi_dsi_device *dsi = bl_get_data(bl);
-	struct rad_panel *rad = mipi_dsi_get_drvdata(dsi);
-	u16 brightness;
-	int ret;
-
-	if (!rad->prepared)
-		return 0;
-
-//	dsi->mode_flags &= ~MIPI_DSI_MODE_LPM;
-//
-//	ret = mipi_dsi_dcs_get_display_brightness(dsi, &brightness);
-//	if (ret < 0)
-//		return ret;
-//
-	bl->props.brightness = brightness;
-
-	return brightness & 0xff;
-}
-
-static int rad_bl_update_status(struct backlight_device *bl)
-{
-	struct mipi_dsi_device *dsi = bl_get_data(bl);
-	struct rad_panel *rad = mipi_dsi_get_drvdata(dsi);
-	int ret = 0;
-
-	if (!rad->prepared)
-		return 0;
-
-//	dsi->mode_flags &= ~MIPI_DSI_MODE_LPM;
-//
-//	ret = mipi_dsi_dcs_set_display_brightness(dsi, bl->props.brightness);
-//	if (ret < 0)
-//		return ret;
-//
-	return 0;
-}
-
-static const struct backlight_ops rad_bl_ops = {
-	.update_status = rad_bl_update_status,
-	.get_brightness = rad_bl_get_brightness,
-};
-
 static const struct drm_panel_funcs rad_panel_funcs = {
-	.prepare = rad_panel_prepare,
-	.unprepare = rad_panel_unprepare,
 	.enable = rad_panel_enable,
 	.disable = rad_panel_disable,
 	.get_modes = rad_panel_get_modes,
 };
-
-static const char * const rad_supply_names[] = {
-	"v3p3",
-	"v1p8",
-};
-
 
 static const struct rad_platform_data rad_rm67191 = {
 	.enable = &rm67191_enable,
@@ -302,7 +224,7 @@ static int rad_panel_probe(struct mipi_dsi_device *dsi)
 	if (!of_id || !of_id->data)
 		return -ENODEV;
 
-	panel = devm_kzalloc(&dsi->dev, sizeof(*panel), GFP_KERNEL);
+	panel = devm_kzalloc(dev, sizeof(*panel), GFP_KERNEL);
 	if (!panel)
 		return -ENOMEM;
 
@@ -340,23 +262,22 @@ static int rad_panel_probe(struct mipi_dsi_device *dsi)
 		return ret;
 	}
 
-//	panel->enable = devm_gpiod_get_optional(dev, "enable",
-//					       GPIOD_OUT_LOW |
-//					       GPIOD_FLAGS_BIT_NONEXCLUSIVE);
-//	if (IS_ERR(panel->enable)) {
-//		ret = PTR_ERR(panel->enable);
-//		dev_err(dev, "Failed to get enable gpio (%d)\n", ret);
-//		panel->enable = NULL;
-//	}
-	if(panel->enable)
+	panel->enable = devm_gpiod_get_optional(dev, "enable",
+	                GPIOD_OUT_LOW |
+	                GPIOD_FLAGS_BIT_NONEXCLUSIVE);
+	if (IS_ERR(panel->enable)) {
+		ret = PTR_ERR(panel->enable);
+		dev_err(dev, "Failed to get enable gpio (%d)\n", ret);
+		panel->enable = NULL;
+	} else
 		gpiod_set_value_cansleep(panel->enable, 0);
 
 	backlight = of_parse_phandle(dev->of_node, "backlight", 0);
-	if(backlight){
+	if (backlight) {
 		panel->backlight = of_find_backlight_by_node(backlight);
 		of_node_put(backlight);
-		if(!panel->backlight)
-			printk("panel without backlight\n");
+		if (!panel->backlight)
+			dev_err(dev, "panel without backlight\n");
 	}
 
 	drm_panel_init(&panel->panel);
@@ -365,8 +286,8 @@ static int rad_panel_probe(struct mipi_dsi_device *dsi)
 	dev_set_drvdata(dev, panel);
 
 	ret = drm_panel_add(&panel->panel);
-	if (ret){
-		if(panel->backlight){
+	if (ret) {
+		if (panel->backlight) {
 			put_device(&panel->backlight->dev);
 		}
 		return ret;
@@ -388,13 +309,13 @@ static int rad_panel_remove(struct mipi_dsi_device *dsi)
 	ret = mipi_dsi_detach(dsi);
 	if (ret)
 		DRM_DEV_ERROR(dev, "Failed to detach from host (%d)\n",
-			      ret);
+		        ret);
 
 	drm_panel_remove(&rad->panel);
 
-	if(rad->backlight)
+	if (rad->backlight)
 		put_device(&rad->backlight->dev);
-	if(rad->enable)
+	if (rad->enable)
 		gpiod_set_value_cansleep(rad->enable, 0);
 
 
