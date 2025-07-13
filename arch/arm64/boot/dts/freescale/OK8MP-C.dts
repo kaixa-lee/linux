@@ -262,7 +262,7 @@
 	lvds_backlight: lvds_backlight {
 		compatible = "pwm-backlight";
 		pwms = <&pwm2 0 50000>;
-		status = "okay";
+		status = "no";
 		is-forlinx; //if not forlinx backlight remove this
 
 		brightness-levels = < 
@@ -594,7 +594,7 @@
 		mclk = <24000000>;
 		mclk_source = <0>;
 		mipi_csi;
-		status = "okay";
+		status = "no";
 
 		port {
 			ov5645_mipi_1_ep: endpoint {
@@ -610,7 +610,7 @@
 	    compatible = "basler,basler-camera-vvcam", "basler-camera-vvcam";
 	    reg = <0x36>;
 	    csi_id = <0x00>;
-	    status = "okay";
+	    status = "no";
 	
 	    port {
 	        basler_ep_0: endpoint {
@@ -621,8 +621,6 @@
 	        };
 	    };
 	};
-
-
 };
 
 &i2c3 {
@@ -793,7 +791,7 @@
 	thres-high = <3 4>;             /* (FIFO * 3 / 4) */
 };
 
-/{
+/ {
 	lvds0_panel {
 		compatible = "forlinx,panel", "panel-lvds";
 		backlight = <&lvds_backlight>;
@@ -829,12 +827,12 @@
 };
 
 &ldb {
-	status = "okay";
+	status = "no";
 
 	lvds-channel@0 {
 		fsl,data-mapping = "spwg";
 		fsl,data-width = <24>;
-		status = "okay";
+		status = "no";
 		port@1 {
 			reg = <1>;
 
@@ -1562,7 +1560,7 @@
 &mipi_csi_0 {
 	#address-cells = <1>;
 	#size-cells = <0>;
-	status = "okay";
+	status = "no";
 
 	port@0 {
 		reg = <0>;
