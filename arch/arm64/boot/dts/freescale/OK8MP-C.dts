@@ -887,58 +887,6 @@
 			};
 		};
 	};
-	port@1 {
-		dsim_to_mipi_panel: endpoint {
-			remote-endpoint = <&mipi_panel_from_dsim>;
-		};
-	};
-
-	mipi_panel_uboot {
-		compatible = "forlinx,panel";
-		reg = <0>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_mipi_dsi_en>;
-		enable-gpio = <&gpio1 7 GPIO_ACTIVE_HIGH>;
-		panel-type = "mipi";
-		dsi-lanes = <4>;
-		video-mode = <2>;	/* 0: burst mode
-					 * 1: non-burst mode with sync event
-					 * 2: non-burst mode with sync pulse
-					 */
-		panel-width-mm = <68>;
-		panel-height-mm = <121>;
-		backlight = <&dsi_backlight>;
-		bmp-logo = "logo-1024x600.bmp";
-		status = "okay";
-		display-timings {
-			panel7_1024x600: timings {
-				hback-porch     = <160>;
-				hfront-porch    = <160>;
-				hactive         = <1024>;
-				hsync-len       = <70>;
-				vback-porch     = <23>;
-				vfront-porch    = <12>;
-				vactive         = <600>;
-				vsync-len       = <10>;
-				clock-frequency = <45000000>;
-				vsync-active    = <0>;
-				hsync-active    = <0>;
-				de-active       = <0>;
-				pixelclk-active = <0>;
-			};
-		};
-
-		port {
-			mipi_panel_from_dsim: endpoint {
-				remote-endpoint = <&dsim_to_mipi_panel>;
-			};
-		};
-	};
-
-	dsi_host: dsi-host { //uboot
-		compatible = "samsung,sec-mipi-dsi";
-		status = "okay";
-	};
 };
 
 &easrc {
