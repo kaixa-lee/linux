@@ -53,8 +53,6 @@ static int yt8521_probe(struct phy_device *phydev)
 
 static int yt8521_config_init(struct phy_device *phydev)
 {
-	int ret;
-
 	/* The RX and TX delay default is:
 	 *   after HW reset: RX delay enabled and TX delay disabled
 	 *   after SW reset: RX delay enabled, while TX delay retains the
@@ -68,7 +66,7 @@ static int yt8521_config_init(struct phy_device *phydev)
 	phy_write(phydev,0x1f,0x40);
 	phy_write(phydev,0x1e,0xa003);
 	phy_write(phydev,0x1f,0xfd);
-	return ret;
+	return 0;
 }
 
 static struct phy_driver yt8521_driver[] = {

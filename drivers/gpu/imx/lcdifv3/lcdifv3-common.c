@@ -699,7 +699,6 @@ static int imx_lcdifv3_probe(struct platform_device *pdev)
 {
 	int ret;
 	struct device *dev = &pdev->dev;
-	struct device_node *np = dev->of_node;
 	struct lcdifv3_soc *lcdifv3;
 	struct resource *res;
 	struct regmap *blk_ctl = NULL;

@@ -412,6 +412,7 @@ static int imx_wm8960_probe(struct platform_device *pdev)
 	struct platform_device *asrc_pdev = NULL;
 	struct device_node *asrc_np;
 	u32 width;
+	int gpio_en;
 	int ret;
 
 	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
@@ -689,7 +690,7 @@ static int imx_wm8960_probe(struct platform_device *pdev)
 			dev_warn(&pdev->dev, "create mic attr failed (%d)\n", ret);
 	}
 	
-	struct gpio_desc *gpio_en = of_get_named_gpio(pdev->dev.of_node, "enable", 0);
+	gpio_en = of_get_named_gpio(pdev->dev.of_node, "enable", 0);
 	if(gpio_is_valid(gpio_en)){
 		gpio_set_value_cansleep(gpio_en, 1);	
 	}

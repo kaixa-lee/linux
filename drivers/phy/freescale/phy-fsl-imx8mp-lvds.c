@@ -71,7 +71,7 @@ phy_write(struct phy *phy, unsigned int reg, unsigned int value)
 
 static int imx8mp_lvds_phy_init(struct phy *phy)
 {
-	struct imx8mp_lvds_phy_priv *priv = dev_get_drvdata(phy->dev.parent);
+	struct imx8mp_lvds_phy_priv __maybe_unused *priv = dev_get_drvdata(phy->dev.parent);
 #ifndef CONFIG_FORLINX_LOGO_KEEP
 
 	clk_prepare_enable(priv->apb_clk);
