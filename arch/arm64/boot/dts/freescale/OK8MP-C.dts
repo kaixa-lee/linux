@@ -351,6 +351,15 @@
 		video-lvds = "on";
 		video-hdmi = "on";
 	};
+
+	ds18b20: onewire {
+		compatible = "w1-gpio";
+		gpios = <&gpio5 11 GPIO_ACTIVE_HIGH>;
+		output-open-drain;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_onewire>;
+		status = "okay";
+	};
 };
 
 &aud2htx {
@@ -387,7 +396,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_ecspi2 &pinctrl_ecspi2_cs>;
 	cs-gpios = <&gpio5 13 GPIO_ACTIVE_LOW>;
-	status = "okay";
+	status = "no";
 
 	spidev1: spi@0 {
 		reg = <0>;
@@ -1341,6 +1350,12 @@
 			MX8MP_IOMUXC_SD1_DATA1__USDHC1_DATA1	0x1d4
 			MX8MP_IOMUXC_SD1_DATA2__USDHC1_DATA2	0x1d4
 			MX8MP_IOMUXC_SD1_DATA3__USDHC1_DATA3	0x1d4
+		>;
+	};
+
+	pinctrl_onewire: w1 {
+		fsl,pins = <
+			MX8MP_IOMUXC_ECSPI2_MOSI__GPIO5_IO11	0x40000
 		>;
 	};
 
